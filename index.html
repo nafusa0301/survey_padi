@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Hawar Daun Bakteri - Lahan Sawah</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2d5016;
+            --primary-light: #4a7c2c;
+            --accent: #f59e0b;
+            --bg: #fefce8;
+            --card: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #d1d5db;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+
+        .card h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h2::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+        }
+
+        .form-section h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text);
+            font-size: 0.9em;
+        }
+
+        input, select, textarea {
+            padding: 10px 12px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95em;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(45, 80, 22, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .plot-canvas {
+            position: relative;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 3px solid var(--primary);
+            border-radius: 12px;
+            margin: 20px 0;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        #canvas {
+            display: block;
+            cursor: crosshair;
+            width: 100%;
+            height: auto;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+
+        .legend-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .irri-scale {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .scale-item {
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .scale-item:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .scale-item.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            font-weight: bold;
+        }
+
+        .scale-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .scale-desc {
+            font-size: 0.75em;
+            opacity: 0.8;
+        }
+
+        /* Styling Tabel Panduan Skor */
+        .guide-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 0.85em;
+            background-color: #fafffa;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #c2dbb4;
+        }
+
+        .guide-table th {
+            background-color: var(--primary-light);
+            color: white;
+            padding: 8px 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .guide-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #e2efe0;
+            color: var(--text);
+        }
+
+        .guide-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .guide-table .skor-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 80, 22, 0.3);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--text-light);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: var(--text);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .info-box {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .info-box h4 {
+            color: #1e40af;
+            margin-bottom: 8px;
+        }
+
+        .warning-box {
+            background: #fef3c7;
+            border-left: 4px solid var(--warning);
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: var(--border);
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success) 0%, var(--primary) 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        .data-table th {
+            background: var(--primary);
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .data-table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .data-table .point-cell {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .data-table .edit-btn {
+            padding: 4px 10px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+
+        .data-table .edit-btn:hover {
+            background: var(--primary-light);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .btn, .button-group, .legend, .progress-bar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌾 Survey Intensitas Hawar Daun Bakteri</h1>
+            <p>Pengukuran Penyakit pada Lahan Sawah - Metode Sampling Sistematis 15×15 meter</p>
+        </header>
+
+        <div class="card">
+            <h2>📋 Informasi Umum Lahan</h2>
+            <div class="form-section">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="lokasi">Lokasi Lahan *</label>
+                        <input type="text" id="lokasi" placeholder="Contoh: Desa Sukamaju, Kec. Cianjur" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tanggal">Tanggal Survey *</label>
+                        <input type="date" id="tanggal" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="surveyor">Nama Surveyor *</label>
+                        <input type="text" id="surveyor" placeholder="Nama lengkap" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="jarakTanam">Jarak Tanam (cm) *</label>
+                        <input type="text" id="jarakTanam" placeholder="Contoh: 25 x 25" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="faseTanaman">Fase Tanaman *</label>
+                        <select id="faseTanaman" required>
+                            <option value="">-- Pilih Fase --</option>
+                            <option value="Vegetatif">Vegetatif</option>
+                            <option value="Generatif">Generatif</option>
+                            <option value="Pematangan">Pematangan</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="umurTanaman">Umur Tanaman (HST) *</label>
+                        <input type="number" id="umurTanaman" placeholder="Hari Setelah Tanam" min="0" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="drainase">Kondisi Drainase *</label>
+                        <select id="drainase" required>
+                            <option value="">-- Pilih Kondisi --</option>
+                            <option value="Baik">Baik (Air mengalir lancar)</option>
+                            <option value="Sedang">Sedang (Air sedikit tergenang)</option>
+                            <option value="Buruk">Buruk (Air tergenang banyak)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="varietas">Varietas Padi</label>
+                        <input type="text" id="varietas" placeholder="Contoh: IR64, Ciherang">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="catatan">Catatan Umum</label>
+                    <textarea id="catatan" placeholder="Kondisi cuaca, catatan khusus, dll."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="card">
+                <h2>🗺️ Peta Plot Sampling 15×15 meter</h2>
+                <div class="info-box">
+                    <h4>Cara Penggunaan:</h4>
+                    <p>Klik pada titik sampling di peta untuk mengisi data pengamatan. 20 titik telah ditempatkan secara sistematis acak dalam plot.</p>
+                </div>
+                <div class="plot-canvas">
+                    <canvas id="canvas" width="600" height="600"></canvas>
+                </div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: var(--accent)"></div>
+                        <span>Belum Diisi</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: var(--success)"></div>
+                        <span>Sudah Diisi</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: var(--primary); border-width: 3px;"></div>
+                        <span>Sedang Aktif</span>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar">0 / 20</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📝 Form Pengamatan Titik Sampling</h2>
+                <div class="warning-box" id="warningSelectPoint">
+                    <strong>⚠️ Perhatian:</strong> Pilih titik pada peta terlebih dahulu untuk mengisi data pengamatan.
+                </div>
+                
+                <div id="observationForm" style="display: none;">
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">
+                        📍 Titik <span id="currentPoint">-</span> 
+                        <small style="color: var(--text-light); font-size: 0.8em;">
+                            (Koordinat: <span id="currentCoord">-</span>)
+                        </small>
+                    </h3> 
+                    
+                    <div class="form-section">
+                        <h3>📖 Buku Saku / Panduan Skor Sakit</h3>
+                        <table class="guide-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 15%">Skor</th>
+                                    <th style="width: 30%">% Luas Daun</th>
+                                    <th>Deskripsi Gejala</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="skor-badge">0</span></td>
+                                    <td><strong>0%</strong></td>
+                                    <td>Tidak ada gejala/infeksi pada daun</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="skor-badge">1</span></td>
+                                    <td><strong>1 – 5%</strong></td>
+                                    <td>Bercak/lesi sangat sedikit pada ujung daun</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="skor-badge">3</span></td>
+                                    <td><strong>6 – 12%</strong></td>
+                                    <td>Lesi pada ujung daun, meluas ringan ke arah pangkal</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="skor-badge">5</span></td>
+                                    <td><strong>13 – 25%</strong></td>
+                                    <td>Lesi meluas hingga ¼ panjang daun</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="skor-badge">7</span></td>
+                                    <td><strong>26 – 50%</strong></td>
+                                    <td>Lesi meluas hingga ½ panjang daun, daun mulai mengering</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="skor-badge">9</span></td>
+                                    <td><strong>51 – 100%</strong></td>
+                                    <td>Lebih dari ½ daun terinfeksi/mengering; daun mati</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Input Skala SES IRRI (0-9)</h3>
+                        <div class="info-box">
+                            <strong>Petunjuk:</strong> Amati 5-10 rumpun padi di sekitar titik. Pilih skor yang paling mewakili berdasarkan tabel panduan di atas.
+                        </div>
+                        <div class="irri-scale">
+                            <div class="scale-item" data-score="0">
+                                <div class="scale-value">0</div>
+                                <div class="scale-desc">Sehat</div>
+                            </div>
+                            <div class="scale-item" data-score="1">
+                                <div class="scale-value">1</div>
+                                <div class="scale-desc">1-5%</div>
+                            </div>
+                            <div class="scale-item" data-score="3">
+                                <div class="scale-value">3</div>
+                                <div class="scale-desc">6-12%</div>
+                            </div>
+                            <div class="scale-item" data-score="5">
+                                <div class="scale-value">5</div>
+                                <div class="scale-desc">13-25%</div>
+                            </div>
+                            <div class="scale-item" data-score="7">
+                                <div class="scale-value">7</div>
+                                <div class="scale-desc">26-50%</div>
+                            </div>
+                            <div class="scale-item" data-score="9">
+                                <div class="scale-value">9</div>
+                                <div class="scale-desc">>50%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Catatan Pengamatan</h3>
+                        <div class="form-group">
+                            <label for="catatanTitik">Catatan Spesifik Titik (opsional)</label>
+                            <textarea id="catatanTitik" placeholder="Contoh: Banyak gulma, genangan air, dll."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-success" id="savePoint">✓ Simpan Data Titik</button>
+                        <button class="btn btn-secondary" id="clearPoint">✕ Batal</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📊 Data Pengamatan Terkumpul</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="statCompleted">0</div>
+                    <div class="stat-label">Titik Terisi</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statRemaining">20</div>
+                    <div class="stat-label">Titik Tersisa</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statAvgScore">-</div>
+                    <div class="stat-label">Rata-rata Skor</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statIntensity">-</div>
+                    <div class="stat-label">Intensitas (%)</div>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto; margin-top: 20px;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Titik</th>
+                            <th>Koordinat (X, Y)</th>
+                            <th>Skor IRRI</th>
+                            <th>Catatan</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-light);">
+                                Belum ada data. Mulai dengan mengklik titik pada peta.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="button-group" style="margin-top: 30px;">
+                <button class="btn btn-primary" id="exportCSV">📄 Ekspor ke CSV</button>
+                <button class="btn btn-secondary" id="printForm">🖨️ Cetak Formulir</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const samplingPoints = [
+            {"id":1,"x":1.78,"y":0.57},{"id":2,"x":4.05,"y":1.11},{"id":3,"x":7.97,"y":2.36},
+            {"id":4,"x":11.28,"y":0.74},{"id":5,"x":13.34,"y":0.58},{"id":6,"x":1.35,"y":5.04},
+            {"id":7,"x":3.72,"y":6.87},{"id":8,"x":7.65,"y":5.32},{"id":9,"x":10.08,"y":5.06},
+            {"id":10,"x":13.07,"y":4.47},{"id":11,"x":1.91,"y":9.4},{"id":12,"x":4.91,"y":11.37},
+            {"id":13,"x":7.01,"y":8.95},{"id":14,"x":11.07,"y":10.64},{"id":15,"x":13.75,"y":9.58},
+            {"id":16,"x":2.14,"y":12.85},{"id":17,"x":5.75,"y":13.34},{"id":18,"x":7.34,"y":13.54},
+            {"id":19,"x":10.76,"y":14.01},{"id":20,"x":13.63,"y":13.99}
+        ];
+
+        let observationData = {};
+        let currentPointId = null;
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const scale = canvas.width / 15;
+
+        function init() {
+            drawPlot();
+            setupEventListeners();
+            document.getElementById('tanggal').valueAsDate = new Date();
+        }
+
+        function drawPlot() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.strokeStyle = '#d1d5db';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 15; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * scale, 0);
+                ctx.lineTo(i * scale, canvas.height);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(0, i * scale);
+                ctx.lineTo(canvas.width, i * scale);
+                ctx.stroke();
+            }
+
+            ctx.strokeStyle = '#2d5016';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#1f2937';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.fillText('0m', 5, canvas.height - 5);
+            ctx.fillText('15m', canvas.width - 30, canvas.height - 5);
+            ctx.fillText('15m', 5, 15);
+            
+            samplingPoints.forEach(point => {
+                const x = point.x * scale;
+                const y = (15 - point.y) * scale;
+                
+                const isCompleted = observationData[point.id];
+                const isActive = currentPointId === point.id;
+                
+                ctx.fillStyle = isActive ? '#2d5016' : (isCompleted ? '#10b981' : '#f59e0b');
+                ctx.beginPath();
+                ctx.arc(x, y, isActive ? 12 : 9, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = isActive ? 3 : 2;
+                ctx.stroke();
+                
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(point.id, x, y);
+            });
+        }
+
+        function setupEventListeners() {
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
+                const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
+                
+                samplingPoints.forEach(point => {
+                    const px = point.x * scale;
+                    const py = (15 - point.y) * scale;
+                    const distance = Math.sqrt((clickX - px) ** 2 + (clickY - py) ** 2);
+                    
+                    if (distance < 18) {
+                        selectPoint(point.id);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.scale-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.scale-item').forEach(i => i.classList.remove('selected'));
+                    item.classList.add('selected');
+                });
+            });
+
+            document.getElementById('savePoint').addEventListener('click', savePointData);
+            
+            document.getElementById('clearPoint').addEventListener('click', () => {
+                currentPointId = null;
+                document.getElementById('observationForm').style.display = 'none';
+                document.getElementById('warningSelectPoint').style.display = 'block';
+                drawPlot();
+            });
+
+            document.getElementById('exportCSV').addEventListener('click', exportToCSV);
+            document.getElementById('printForm').addEventListener('click', () => window.print());
+        }
+
+        function selectPoint(pointId) {
+            currentPointId = pointId;
+            const point = samplingPoints.find(p => p.id === pointId);
+            
+            document.getElementById('warningSelectPoint').style.display = 'none';
+            document.getElementById('observationForm').style.display = 'block';
+            document.getElementById('currentPoint').textContent = pointId;
+            document.getElementById('currentCoord').textContent = `${point.x}m, ${point.y}m`;
+            
+            if (observationData[pointId]) {
+                const data = observationData[pointId];
+                document.querySelectorAll('.scale-item').forEach(item => {
+                    item.classList.remove('selected');
+                    if (parseInt(item.dataset.score) === data.score) {
+                        item.classList.add('selected');
+                    }
+                });
+                document.getElementById('catatanTitik').value = data.notes || '';
+            } else {
+                document.querySelectorAll('.scale-item').forEach(item => item.classList.remove('selected'));
+                document.getElementById('catatanTitik').value = '';
+            }
+            
+            drawPlot();
+        }
+
+        function savePointData() {
+            const selectedScore = document.querySelector('.scale-item.selected');
+            if (!selectedScore) {
+                alert('Pilih skor IRRI terlebih dahulu!');
+                return;
+            }
+
+            const score = parseInt(selectedScore.dataset.score);
+            const notes = document.getElementById('catatanTitik').value;
+            const point = samplingPoints.find(p => p.id === currentPointId);
+
+            observationData[currentPointId] = {
+                score: score,
+                notes: notes,
+                x: point.x,
+                y: point.y
+            };
+
+            updateDataTable();
+            updateStats();
+            drawPlot();
+
+            currentPointId = null;
+            document.getElementById('observationForm').style.display = 'none';
+            document.getElementById('warningSelectPoint').style.display = 'block';
+        }
+
+        function updateDataTable() {
+            const tbody = document.getElementById('dataTableBody');
+            
+            if (Object.keys(observationData).length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-light);">
+                            Belum ada data. Mulai dengan mengklik titik pada peta.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            Object.keys(observationData).sort((a, b) => parseInt(a) - parseInt(b)).forEach(pointId => {
+                const data = observationData[pointId];
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td class="point-cell">Titik ${pointId}</td>
+                    <td>(${data.x}, ${data.y})</td>
+                    <td><span class="skor-badge">${data.score}</span></td>
+                    <td>${data.notes || '-'}</td>
+                    <td>
+                        <button class="edit-btn" onclick="selectPoint(${pointId})">Edit</button>
+                    </td>
+                `;
+            });
+        }
+
+        function updateStats() {
+            const completed = Object.keys(observationData).length;
+            const remaining = 20 - completed;
+            
+            document.getElementById('statCompleted').textContent = completed;
+            document.getElementById('statRemaining').textContent = remaining;
+            
+            const progressBar = document.getElementById('progressBar');
+            const percentage = (completed / 20) * 100;
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = `${completed} / 20`;
+
+            if (completed > 0) {
+                const scores = Object.values(observationData).map(d => d.score);
+                const avgScore = (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2);
+                const intensity = ((avgScore / 9) * 100).toFixed(1);
+                
+                document.getElementById('statAvgScore').textContent = avgScore;
+                document.getElementById('statIntensity').textContent = intensity + '%';
+            } else {
+                document.getElementById('statAvgScore').textContent = '-';
+                document.getElementById('statIntensity').textContent = '-';
+            }
+        }
+
+        function exportToCSV() {
+            if (Object.keys(observationData).length === 0) {
+                alert('Belum ada data untuk diekspor!');
+                return;
+            }
+
+            const lokasi = document.getElementById('lokasi').value || '-';
+            const tanggal = document.getElementById('tanggal').value || '-';
+            const surveyor = document.getElementById('surveyor').value || '-';
+            const jarakTanam = document.getElementById('jarakTanam').value || '-';
+            const faseTanaman = document.getElementById('faseTanaman').value || '-';
+            const umurTanaman = document.getElementById('umurTanaman').value || '-';
+            const drainase = document.getElementById('drainase').value || '-';
+            const varietas = document.getElementById('varietas').value || '-';
+
+            let csv = 'SURVEY HAWAR DAUN BAKTERI\n';
+            csv += `Lokasi,${lokasi}\n`;
+            csv += `Tanggal,${tanggal}\n`;
+            csv += `Surveyor,${surveyor}\n`;
+            csv += `Jarak Tanam,${jarakTanam}\n`;
+            csv += `Fase Tanaman,${faseTanaman}\n`;
+            csv += `Umur Tanaman (HST),${umurTanaman}\n`;
+            csv += `Kondisi Drainase,${drainase}\n`;
+            csv += `Varietas,${varietas}\n\n`;
+            
+            csv += 'Titik,Koordinat_X (m),Koordinat_Y (m),Skor_IRRI,Catatan\n';
+            Object.keys(observationData).sort((a, b) => parseInt(a) - parseInt(b)).forEach(pointId => {
+                const data = observationData[pointId];
+                csv += `${pointId},${data.x},${data.y},${data.score},"${data.notes || ''}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `survey_hawar_daun_${tanggal}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        init();
+    </script>
+</body>
+</html>
